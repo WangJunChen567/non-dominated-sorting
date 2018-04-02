@@ -24,4 +24,8 @@ public class JensenFortinBuzdalov {
     public static NonDominatedSortingFactory getRedBlackTreeSweepHybridNDTImplementation(int threshold) {
         return (p, d) -> new RedBlackTreeSweepHybridNDT(p, d, threshold);
     }
+
+    public static NonDominatedSortingFactory getRedBlackTreeSweepHybridNDTParallelImplementation(int allowedThreads, int threshold) {
+        return (p, d) -> new RedBlackTreeSweepHybridNDTParallel(p, d, allowedThreads, threshold);
+    }
 }
