@@ -33,6 +33,37 @@ public final class SplitMergeHelper {
         }
     }
 
+    public final int splitInTwoShifted(double[] points, int[] indices,
+                                       int tempFrom, int from, int until, double median,
+                                       boolean equalToLeft, double minVal, double maxVal,
+                                       int shift) {
+        tempFrom -= shift;
+        from -= shift;
+        until -= shift;
+        int result;
+        if (minVal == median && maxVal == median) {
+            result = equalToLeft ? until : from;
+        } else if (minVal > median || !equalToLeft && minVal == median) {
+            result= from;
+        } else if (maxVal < median || equalToLeft && maxVal == median) {
+            result =  until;
+        } else {
+            int left = from, right = tempFrom;
+            for (int i = from; i < until; ++i) {
+                int ii = indices[i];
+                double v = points[ii];
+                if (v < median || (equalToLeft && v == median)) {
+                    indices[left++] = ii;
+                } else {
+                    scratchR[right++] = ii;
+                }
+            }
+            System.arraycopy(scratchR, tempFrom, indices, left, right - tempFrom);
+            result = left;
+        }
+        return result + shift;
+    }
+
     public final long splitInThree(double[] points, int[] indices,
                                    int tempFrom, int from, int until, double median,
                                    double minVal, double maxVal) {

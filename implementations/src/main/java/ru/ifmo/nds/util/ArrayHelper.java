@@ -150,6 +150,13 @@ public final class ArrayHelper {
         return targetFrom;
     }
 
+    public static int transplantShifted(double[] source, int[] indices, int fromIndex, int untilIndex, double[] target, int targetFrom, int shift) {
+        for (int i = fromIndex; i < untilIndex; ++i) {
+            target[targetFrom++] = source[indices[i - shift]];
+        }
+        return targetFrom;
+    }
+
     public static double max(double[] array, int from, int until) {
         if (from >= until) {
             return Double.NEGATIVE_INFINITY;

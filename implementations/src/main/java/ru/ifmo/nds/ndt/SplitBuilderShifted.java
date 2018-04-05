@@ -12,6 +12,7 @@ public class SplitBuilderShifted {
     private final SplitMergeHelper splitMerge;
     private final Split[] splits;
     private int nSplits;
+    private int shift;
 
     public SplitBuilderShifted(int size) {
         this.medianSwap = new double[size];
@@ -24,12 +25,14 @@ public class SplitBuilderShifted {
     }
 
     private Split construct(int from, int until, int coordinate, int depth) {
+        int shiftedFrom = from - shift;
+        int shiftedUntil = until - shift;
         if (from + threshold < until) {
             int nextCoordinate = coordinate + 1 == maxCoordinate ? 1 : coordinate + 1;
-            ArrayHelper.transplant(transposedPoints[coordinate], indices, from, until, medianSwap, from);
-            double median = ArrayHelper.destructiveMedian(medianSwap, from, until);
-            double min = ArrayHelper.min(medianSwap, from, until);
-            double max = ArrayHelper.max(medianSwap, from, until);
+            ArrayHelper.transplantShifted(transposedPoints[coordinate], indices, from, until, medianSwap, shiftedFrom, shift);
+            double median = ArrayHelper.destructiveMedian(medianSwap, shiftedFrom, shiftedUntil);
+            double min = ArrayHelper.min(medianSwap, shiftedFrom, shiftedUntil);
+            double max = ArrayHelper.max(medianSwap, shiftedFrom, shiftedUntil);
             if (min == max) {
                 if (depth == maxCoordinate) {
                     // When all median values are equal for all remaining coordinates,
@@ -45,8 +48,8 @@ public class SplitBuilderShifted {
                 // To prevent this, we will increase the median slightly.
                 median = Math.nextUp(median);
             }
-            int mid = splitMerge.splitInTwo(transposedPoints[coordinate], indices,
-                    from, from, until, median, false, min, max);
+            int mid = splitMerge.splitInTwoShifted(transposedPoints[coordinate], indices,
+                    from, from, until, median, false, min, max, shift);
             Split rv = splits[nSplits++];
             rv.initialize(coordinate, median,
                     construct(from, mid, nextCoordinate, 0),
@@ -57,26 +60,18 @@ public class SplitBuilderShifted {
         }
     }
 
-    public Split result(double[][] transposedPoints, int nPoints, int dimension, int threshold) {
+    public Split result(double[][] transposedPoints,
+                        int from, int until,
+                        int[] indices,
+                        int dimension,
+                        int threshold,
+                        int shift) {
         this.transposedPoints = transposedPoints;
         this.threshold = threshold;
         this.maxCoordinate = dimension;
         this.nSplits = 0;
-        for (int i = 0; i < nPoints; ++i) {
-            indices[i] = i;
-        }
-        Split result = construct(0, nPoints, 1, 0);
-        this.transposedPoints = null;
-        this.threshold = -1;
-        return result;
-    }
-
-    public Split result(double[][] transposedPoints, int from, int until, int[] indices, int dimension, int threshold) {
-        this.transposedPoints = transposedPoints;
-        this.threshold = threshold;
-        this.maxCoordinate = dimension;
-        this.nSplits = 0;
-        System.arraycopy(indices, from, this.indices, from, until - from);
+        this.shift = shift;
+        System.arraycopy(indices, from, this.indices, from - from, until - from);
         Split result = construct(from, until, 1, 0);
         this.transposedPoints = null;
         this.threshold = -1;
