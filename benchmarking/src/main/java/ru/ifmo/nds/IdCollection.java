@@ -136,6 +136,7 @@ public final class IdCollection {
             addNonDominatedSortingFactory("jfb.rbtree.hybrid.ens.th" + threads, JensenFortinBuzdalov.getRedBlackTreeSweepHybridENSImplementation(threads));
             addNonDominatedSortingFactory("jfb.rbtree.hybrid.ndt.8.th" + threads, JensenFortinBuzdalov.getRedBlackTreeSweepHybridNDTParallelImplementation(threads, 8));
         }
+        addNonDominatedSortingFactory("jfb.rbtree.hybrid.ndt.8.th1", JensenFortinBuzdalov.getRedBlackTreeSweepHybridNDTParallelImplementation(1, 8));
         addNonDominatedSortingFactory("jfb.rbtree.thmax", JensenFortinBuzdalov.getRedBlackTreeSweepImplementation(-1));
         addNonDominatedSortingFactory("jfb.rbtree.hybrid.fnds.thmax", JensenFortinBuzdalov.getRedBlackTreeSweepHybridFNDSImplementation(-1));
         addNonDominatedSortingFactory("jfb.rbtree.hybrid.ens.thmax", JensenFortinBuzdalov.getRedBlackTreeSweepHybridENSImplementation(-1));

@@ -23,7 +23,7 @@ public class RedBlackTreeSweepHybridNDTParallel extends RedBlackTreeSweep {
 
     @Override
     public String getName() {
-        return "Jensen-Fortin-Buzdalov sorting, " + getThreadDescription() + " (tree sweep, hybrid with ENS-NDT, threshold " + threshold + ")";
+        return "Jensen-Fortin-Buzdalov parallel sorting, " + getThreadDescription() + " (tree sweep, hybrid with ENS-NDT, threshold " + threshold + ")";
     }
 
     @Override
@@ -50,20 +50,19 @@ public class RedBlackTreeSweepHybridNDTParallel extends RedBlackTreeSweep {
         SplitBuilderShifted splitBuilder = new SplitBuilderShifted(until - from);
         TreeRankNode tree = TreeRankNode.EMPTY;
         double[][] localPoints = new double[until - from][M];
-        int shift = from;
-        Split split = splitBuilder.result(transposedPoints, from, until, indices, M, threshold, shift);
+        Split split = splitBuilder.result(transposedPoints, from, until, indices, M, threshold, from);
 
         for (int i = from; i < until; ++i) {
-            System.arraycopy(points[indices[i]], 0, localPoints[i - shift], 0, M);
+            System.arraycopy(points[indices[i]], 0, localPoints[i - from], 0, M);
         }
 
         int minOverflow = until;
         for (int i = from; i < until; ++i) {
             int idx = indices[i];
-            ranks[idx] = tree.evaluateRank(localPoints[i - shift], ranks[idx], split, M);
+            ranks[idx] = tree.evaluateRank(localPoints[i - from], ranks[idx], split, M);
 
             if (ranks[idx] <= maximalMeaningfulRank) {
-                tree = tree.add(localPoints[i - shift], ranks[idx], split, threshold);
+                tree = tree.add(localPoints[i - from], ranks[idx], split, threshold);
             } else if (minOverflow > i) {
                 minOverflow = i;
             }
