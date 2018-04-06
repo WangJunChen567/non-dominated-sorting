@@ -1,13 +1,12 @@
 package ru.ifmo.nds.jfb;
 
 import ru.ifmo.nds.ndt.Split;
-import ru.ifmo.nds.ndt.SplitBuilder;
 import ru.ifmo.nds.ndt.SplitBuilderShifted;
 import ru.ifmo.nds.ndt.TreeRankNode;
 
 public class RedBlackTreeSweepHybridNDTParallel extends RedBlackTreeSweep {
     private static final int THRESHOLD_3D = 100;
-    private static final int THRESHOLD_ALL = 200;
+    private static final int THRESHOLD_ALL = 20000;
 
     private final int threshold;
 
@@ -77,11 +76,11 @@ public class RedBlackTreeSweepHybridNDTParallel extends RedBlackTreeSweep {
         int M = obj + 1;
         int sizeUnion = goodUntil - goodFrom + weakUntil - weakFrom;
 
-        SplitBuilder splitBuilder = new SplitBuilder(Math.max(goodUntil, weakUntil)); // TODO
+        SplitBuilderShifted splitBuilder = new SplitBuilderShifted(goodUntil - goodFrom);
         TreeRankNode tree = TreeRankNode.EMPTY;
         double[][] localPoints = new double[sizeUnion][M];
 
-        Split split = splitBuilder.result(transposedPoints, goodFrom, goodUntil, indices, M, threshold);
+        Split split = splitBuilder.result(transposedPoints, goodFrom, goodUntil, indices, M, threshold, goodFrom);
 
         for (int good = goodFrom; good < goodUntil; ++good) {
             System.arraycopy(points[indices[good]], 0, localPoints[good - goodFrom], 0, M);
@@ -103,7 +102,6 @@ public class RedBlackTreeSweepHybridNDTParallel extends RedBlackTreeSweep {
                 minOverflow = weak;
             }
         }
-        tree = null;
         return kickOutOverflowedRanks(minOverflow, weakUntil);
     }
 }

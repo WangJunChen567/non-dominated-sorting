@@ -134,10 +134,12 @@ public final class IdCollection {
             addNonDominatedSortingFactory("jfb.rbtree.th" + threads, JensenFortinBuzdalov.getRedBlackTreeSweepImplementation(threads));
             addNonDominatedSortingFactory("jfb.rbtree.hybrid.fnds.th" + threads, JensenFortinBuzdalov.getRedBlackTreeSweepHybridFNDSImplementation(threads));
             addNonDominatedSortingFactory("jfb.rbtree.hybrid.ens.th" + threads, JensenFortinBuzdalov.getRedBlackTreeSweepHybridENSImplementation(threads));
+            addNonDominatedSortingFactory("jfb.rbtree.hybrid.ndt.8.th" + threads, JensenFortinBuzdalov.getRedBlackTreeSweepHybridNDTParallelImplementation(threads, 8));
         }
         addNonDominatedSortingFactory("jfb.rbtree.thmax", JensenFortinBuzdalov.getRedBlackTreeSweepImplementation(-1));
         addNonDominatedSortingFactory("jfb.rbtree.hybrid.fnds.thmax", JensenFortinBuzdalov.getRedBlackTreeSweepHybridFNDSImplementation(-1));
         addNonDominatedSortingFactory("jfb.rbtree.hybrid.ens.thmax", JensenFortinBuzdalov.getRedBlackTreeSweepHybridENSImplementation(-1));
+        addNonDominatedSortingFactory("jfb.rbtree.hybrid.ndt.8.thmax", JensenFortinBuzdalov.getRedBlackTreeSweepHybridNDTParallelImplementation(-1, 8));
         addNonDominatedSortingFactory("dcns.bs", SumitMishraDivideConquer.getSumitImplementation2016(true, false));
         addNonDominatedSortingFactory("dcns.bss", SumitMishraDivideConquer.getSumitImplementation2016(true, true));
         addNonDominatedSortingFactory("dcns.ss", SumitMishraDivideConquer.getSumitImplementation2016(false, false));
