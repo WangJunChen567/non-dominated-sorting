@@ -1,5 +1,6 @@
 package ru.ifmo.nds.jfb;
 
+import java.time.Duration;
 import java.util.Arrays;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.ForkJoinTask;
@@ -165,7 +166,13 @@ public abstract class JFBBase extends NonDominatedSorting {
         } else {
             while (obj > 1) {
                 if (hybrid.helperAHookCondition(until - from, obj)) {
-                    return hybrid.helperAHook(from, until, obj, maximalMeaningfulRank);
+                    Deadline deadline = Deadline.fromNow(Duration.ofMinutes(5));
+                    int result = hybrid.helperAHook(from, until, obj, maximalMeaningfulRank, deadline);
+                    if (deadline.wasExceeded()) {
+                        // TODO modify
+                    } else {
+                        return result;
+                    }
                 } else if (ArrayHelper.transplantAndCheckIfSame(transposedPoints[obj], indices, from, until, temporary, from)) {
                     --obj;
                 } else {
@@ -299,7 +306,13 @@ public abstract class JFBBase extends NonDominatedSorting {
             } else {
                 while (obj > 1) {
                     if (hybrid.helperBHookCondition(goodFrom, goodUntil, weakFrom, weakUntil, obj)) {
-                        return hybrid.helperBHook(goodFrom, goodUntil, weakFrom, weakUntil, obj, tempFrom, maximalMeaningfulRank);
+                        Deadline deadline = Deadline.fromNow(Duration.ofMinutes(5));
+                        int result = hybrid.helperBHook(goodFrom, goodUntil, weakFrom, weakUntil, obj, tempFrom, maximalMeaningfulRank, deadline);
+                        if (deadline.wasExceeded()) {
+                            // TODO modify
+                        } else {
+                            return result;
+                        }
                     } else {
                         double[] currentPoints = transposedPoints[obj];
                         switch (ArrayHelper.transplantAndDecide(currentPoints, indices,

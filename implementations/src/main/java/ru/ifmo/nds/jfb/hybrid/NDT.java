@@ -1,5 +1,6 @@
 package ru.ifmo.nds.jfb.hybrid;
 
+import ru.ifmo.nds.jfb.Deadline;
 import ru.ifmo.nds.jfb.HybridAlgorithmWrapper;
 import ru.ifmo.nds.jfb.JFBBase;
 import ru.ifmo.nds.ndt.Split;
@@ -79,7 +80,7 @@ public final class NDT extends HybridAlgorithmWrapper {
         }
 
         @Override
-        public int helperAHook(int from, int until, int obj, int maximalMeaningfulRank) {
+        public int helperAHook(int from, int until, int obj, int maximalMeaningfulRank, Deadline deadline) {
             int M = obj + 1;
             Split split = splitBuilder.result(transposedPoints, from, until, indices, M, threshold);
 
@@ -89,7 +90,7 @@ public final class NDT extends HybridAlgorithmWrapper {
 
             int minOverflow = until;
             tree = TreeRankNode.EMPTY;
-            for (int i = from; i < until; ++i) {
+            for (int i = from; i < until && !deadline.isExceeded(); ++i) {
                 int idx = indices[i];
                 ranks[idx] = tree.evaluateRank(localPoints[i], ranks[idx], split, M);
 
@@ -99,12 +100,15 @@ public final class NDT extends HybridAlgorithmWrapper {
                     minOverflow = i;
                 }
             }
+            if (deadline.wasExceeded()) {
+                // TODO deadline exceeded
+            }
             tree = null;
             return JFBBase.kickOutOverflowedRanks(indices, ranks, maximalMeaningfulRank, minOverflow, until);
         }
 
         @Override
-        public int helperBHook(int goodFrom, int goodUntil, int weakFrom, int weakUntil, int obj, int tempFrom, int maximalMeaningfulRank) {
+        public int helperBHook(int goodFrom, int goodUntil, int weakFrom, int weakUntil, int obj, int tempFrom, int maximalMeaningfulRank, Deadline deadline) {
             int M = obj + 1;
             Split split = splitBuilder.result(transposedPoints, goodFrom, goodUntil, indices, M, threshold);
 
@@ -117,17 +121,23 @@ public final class NDT extends HybridAlgorithmWrapper {
 
             int minOverflow = weakUntil;
             tree = TreeRankNode.EMPTY;
-            for (int good = goodFrom, weak = weakFrom; weak < weakUntil; ++weak) {
+            for (int good = goodFrom, weak = weakFrom; weak < weakUntil && !deadline.isExceeded(); ++weak) {
                 int wi = indices[weak];
                 int gi;
-                while (good < goodUntil && (gi = indices[good]) < wi) {
+                while (good < goodUntil && (gi = indices[good]) < wi && !deadline.isExceeded()) {
                     tree = tree.add(localPoints[good], ranks[gi], split, threshold);
                     ++good;
+                }
+                if (deadline.wasExceeded()) {
+                    // TODO deadline exceeded
                 }
                 ranks[wi] = tree.evaluateRank(localPoints[weak], ranks[wi], split, M);
                 if (minOverflow > weak && ranks[wi] > maximalMeaningfulRank) {
                     minOverflow = weak;
                 }
+            }
+            if (deadline.wasExceeded()) {
+                // TODO deadline exceeded
             }
             tree = null;
             return JFBBase.kickOutOverflowedRanks(indices, ranks, maximalMeaningfulRank, minOverflow, weakUntil);

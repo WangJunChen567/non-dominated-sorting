@@ -1,5 +1,6 @@
 package ru.ifmo.nds.jfb.hybrid;
 
+import ru.ifmo.nds.jfb.Deadline;
 import ru.ifmo.nds.jfb.HybridAlgorithmWrapper;
 
 public final class Dummy extends HybridAlgorithmWrapper {
@@ -37,12 +38,12 @@ public final class Dummy extends HybridAlgorithmWrapper {
         }
 
         @Override
-        public int helperAHook(int from, int until, int obj, int maximalMeaningfulRank) {
+        public int helperAHook(int from, int until, int obj, int maximalMeaningfulRank, Deadline deadline) {
             throw new UnsupportedOperationException("helperAHook should never be called");
         }
 
         @Override
-        public int helperBHook(int goodFrom, int goodUntil, int weakFrom, int weakUntil, int obj, int tempFrom, int maximalMeaningfulRank) {
+        public int helperBHook(int goodFrom, int goodUntil, int weakFrom, int weakUntil, int obj, int tempFrom, int maximalMeaningfulRank, Deadline deadline) {
             throw new UnsupportedOperationException("helperBHook should never be called");
         }
     };

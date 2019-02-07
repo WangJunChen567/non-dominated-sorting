@@ -1,5 +1,6 @@
 package ru.ifmo.nds.jfb.hybrid;
 
+import ru.ifmo.nds.jfb.Deadline;
 import ru.ifmo.nds.jfb.HybridAlgorithmWrapper;
 import ru.ifmo.nds.jfb.JFBBase;
 
@@ -50,7 +51,7 @@ public final class LinearNDS extends HybridAlgorithmWrapper {
         }
 
         @Override
-        public int helperAHook(int from, int until, int obj, int maximalMeaningfulRank) {
+        public int helperAHook(int from, int until, int obj, int maximalMeaningfulRank, Deadline deadline) {
             for (int left = from; left < until; ++left) {
                 until = JFBBase.updateByPoint(ranks, indices, points, maximalMeaningfulRank, indices[left], left + 1, until, obj);
             }
@@ -63,7 +64,7 @@ public final class LinearNDS extends HybridAlgorithmWrapper {
         }
 
         @Override
-        public int helperBHook(int goodFrom, int goodUntil, int weakFrom, int weakUntil, int obj, int tempFrom, int maximalMeaningfulRank) {
+        public int helperBHook(int goodFrom, int goodUntil, int weakFrom, int weakUntil, int obj, int tempFrom, int maximalMeaningfulRank, Deadline deadline) {
             for (int good = goodFrom, weakMin = weakFrom; good < goodUntil; ++good) {
                 int goodIndex = indices[good];
                 while (weakMin < weakUntil && indices[weakMin] < goodIndex) {

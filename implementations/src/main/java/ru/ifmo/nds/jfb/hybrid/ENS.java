@@ -1,5 +1,6 @@
 package ru.ifmo.nds.jfb.hybrid;
 
+import ru.ifmo.nds.jfb.Deadline;
 import ru.ifmo.nds.jfb.HybridAlgorithmWrapper;
 import ru.ifmo.nds.jfb.JFBBase;
 import ru.ifmo.nds.util.ArrayHelper;
@@ -90,7 +91,7 @@ public final class ENS extends HybridAlgorithmWrapper {
         }
 
         @Override
-        public int helperAHook(int from, int until, int obj, int maximalMeaningfulRank) {
+        public int helperAHook(int from, int until, int obj, int maximalMeaningfulRank, Deadline deadline) {
             int sliceOffset = from * STORAGE_MULTIPLE;
             int pointOffset = sliceOffset + 3 * (until - from);
 
@@ -98,7 +99,7 @@ public final class ENS extends HybridAlgorithmWrapper {
             int sliceFirst = -1;
 
             int minOverflow = until;
-            for (int i = from, pointIndex = pointOffset; i < until; ++i) {
+            for (int i = from, pointIndex = pointOffset; i < until && !deadline.isExceeded(); ++i) {
                 int ii = indices[i];
                 if (sliceFirst == -1 || checkIfDominatesA(sliceFirst, obj, ii)) {
                     if (ranks[ii] <= maximalMeaningfulRank) {
@@ -134,6 +135,9 @@ public final class ENS extends HybridAlgorithmWrapper {
                     }
                     pointIndex += 2;
                 }
+            }
+            if (deadline.wasExceeded()) {
+                // TODO deadline exceeded
             }
             return JFBBase.kickOutOverflowedRanks(indices, ranks, maximalMeaningfulRank, minOverflow, until);
         }
@@ -182,12 +186,12 @@ public final class ENS extends HybridAlgorithmWrapper {
                     : weakUntil;
         }
 
-        private int transplantRanksAndCheckWhetherAllAreSame(int goodFrom, int goodUntil, int ranksAndSlicesOffset, int sortedIndicesOffset) {
+        private int transplantRanksAndCheckWhetherAllAreSame(int goodFrom, int goodUntil, int ranksAndSlicesOffset, int sortedIndicesOffset, Deadline deadline) {
             int firstRank = -ranks[indices[goodFrom]];
             boolean allSame = true;
             space[ranksAndSlicesOffset] = firstRank;
             space[sortedIndicesOffset] = ranksAndSlicesOffset;
-            for (int i = goodFrom + 1, ri = ranksAndSlicesOffset, si = sortedIndicesOffset; i < goodUntil; ++i) {
+            for (int i = goodFrom + 1, ri = ranksAndSlicesOffset, si = sortedIndicesOffset; i < goodUntil && !deadline.isExceeded(); ++i) {
                 ++ri;
                 ++si;
                 int rank = -ranks[indices[i]];
@@ -249,7 +253,7 @@ public final class ENS extends HybridAlgorithmWrapper {
         }
 
         @Override
-        public int helperBHook(int goodFrom, int goodUntil, int weakFrom, int weakUntil, int obj, int tempFrom, int maximalMeaningfulRank) {
+        public int helperBHook(int goodFrom, int goodUntil, int weakFrom, int weakUntil, int obj, int tempFrom, int maximalMeaningfulRank, Deadline deadline) {
             int goodSize = goodUntil - goodFrom;
 
             int sortedIndicesOffset = tempFrom * STORAGE_MULTIPLE;
@@ -257,7 +261,10 @@ public final class ENS extends HybridAlgorithmWrapper {
             int sliceOffset = ranksAndSlicesOffset + goodSize;
             int pointsBySlicesOffset = sliceOffset + 2 * goodSize;
 
-            int minRank = transplantRanksAndCheckWhetherAllAreSame(goodFrom, goodUntil, ranksAndSlicesOffset, sortedIndicesOffset);
+            int minRank = transplantRanksAndCheckWhetherAllAreSame(goodFrom, goodUntil, ranksAndSlicesOffset, sortedIndicesOffset, deadline);
+            if (deadline.wasExceeded()) {
+                // TODO deadline exceeded
+            }
             if (minRank != 1) {
                 // "good" has a single front, let's do the simple stuff
                 return helperBSingleRank(-minRank, goodFrom, goodUntil, weakFrom, weakUntil, obj, maximalMeaningfulRank);
@@ -266,16 +273,19 @@ public final class ENS extends HybridAlgorithmWrapper {
                 ArraySorter.sortIndicesByValues(space, space, sortedIndicesOffset, sortedIndicesOffset + goodSize);
                 int sliceLast = distributePointsBetweenSlices(space, sortedIndicesOffset, sortedIndicesOffset + goodSize, sliceOffset, pointsBySlicesOffset);
                 int minOverflowed = weakUntil;
-                for (int weak = weakFrom, good = goodFrom, sliceOfGood = ranksAndSlicesOffset; weak < weakUntil; ++weak) {
+                for (int weak = weakFrom, good = goodFrom, sliceOfGood = ranksAndSlicesOffset; weak < weakUntil && !deadline.isExceeded(); ++weak) {
                     int wi = indices[weak];
                     int gi;
-                    while (good < goodUntil && (gi = indices[good]) < wi) {
+                    while (good < goodUntil && (gi = indices[good]) < wi && !deadline.isExceeded()) {
                         int sliceTailIndex = space[sliceOfGood] + 1;
                         int spaceAtTail = space[sliceTailIndex];
                         space[spaceAtTail] = gi;
                         space[sliceTailIndex] = spaceAtTail + 1;
                         ++good;
                         ++sliceOfGood;
+                    }
+                    if (deadline.wasExceeded()) {
+                        // TODO deadline exceeded
                     }
                     int weakRank = findRankInSlices(sliceOffset, sliceLast, wi, obj);
                     if (weakRank > maximalMeaningfulRank && minOverflowed > weak) {
