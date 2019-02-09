@@ -3,6 +3,8 @@ package ru.ifmo.nds.jfb.hybrid;
 import ru.ifmo.nds.jfb.Deadline;
 import ru.ifmo.nds.jfb.HybridAlgorithmWrapper;
 import ru.ifmo.nds.jfb.JFBBase;
+import ru.ifmo.nds.jfb.hybrid.ps.ParameterStrategy;
+import ru.ifmo.nds.jfb.hybrid.ps.ParameterStrategyFactory;
 import ru.ifmo.nds.util.ArrayHelper;
 import ru.ifmo.nds.util.ArraySorter;
 import ru.ifmo.nds.util.DominanceHelper;
@@ -10,10 +12,14 @@ import ru.ifmo.nds.util.DominanceHelper;
 public final class ENS extends HybridAlgorithmWrapper {
     private final int threshold3D;
     private final int thresholdAll;
+    private final ParameterStrategyFactory thresholdAllStrategyFactory;
+    private final ParameterStrategyFactory threshold3DStrategyFactory;
 
-    public ENS(int threshold3D, int thresholdAll) {
+    public ENS(int threshold3D, int thresholdAll, ParameterStrategyFactory thresholdAllStrategyFactory, ParameterStrategyFactory threshold3DStrategyFactory) {
         this.threshold3D = threshold3D;
         this.thresholdAll = thresholdAll;
+        this.thresholdAllStrategyFactory = thresholdAllStrategyFactory;
+        this.threshold3DStrategyFactory = threshold3DStrategyFactory;
     }
 
     @Override
@@ -28,7 +34,7 @@ public final class ENS extends HybridAlgorithmWrapper {
 
     @Override
     public HybridAlgorithmWrapper.Instance create(int[] ranks, int[] indices, double[][] points, double[][] transposedPoints) {
-        return new Instance(ranks, indices, points, threshold3D, thresholdAll);
+        return new Instance(ranks, indices, points, threshold3D, thresholdAll, thresholdAllStrategyFactory.createStrategy(), threshold3DStrategyFactory.createStrategy());
     }
 
     private static final class Instance extends HybridAlgorithmWrapper.Instance {
@@ -39,16 +45,20 @@ public final class ENS extends HybridAlgorithmWrapper {
         private final int[] indices;
         private final double[][] points;
 
-        private final int threshold3D;
-        private final int thresholdAll;
+        private int threshold3D;
+        private int thresholdAll;
+        private final ParameterStrategy thresholdAllStrategy;
+        private final ParameterStrategy threshold3DStrategy;
 
-        private Instance(int[] ranks, int[] indices, double[][] points, int threshold3D, int thresholdAll) {
+        private Instance(int[] ranks, int[] indices, double[][] points, int threshold3D, int thresholdAll, ParameterStrategy thresholdAllStrategy, ParameterStrategy threshold3DStrategy) {
             this.ranks = ranks;
             this.indices = indices;
             this.points = points;
             this.space = new int[STORAGE_MULTIPLE * indices.length];
             this.threshold3D = threshold3D;
             this.thresholdAll = thresholdAll;
+            this.thresholdAllStrategy = thresholdAllStrategy;
+            this.threshold3DStrategy = threshold3DStrategy;
         }
 
         @Override
@@ -293,6 +303,19 @@ public final class ENS extends HybridAlgorithmWrapper {
                     }
                 }
                 return JFBBase.kickOutOverflowedRanks(indices, ranks, maximalMeaningfulRank, minOverflowed, weakUntil);
+            }
+        }
+
+        @Override
+        public void modify(int obj) {
+            switch (obj) {
+                case 1:
+                    break;
+                case 2:
+                    threshold3D = threshold3DStrategy.next(threshold3D);
+                    break;
+                default:
+                    thresholdAll = thresholdAllStrategy.next(thresholdAll);
             }
         }
     }

@@ -74,5 +74,10 @@ public final class LinearNDS extends HybridAlgorithmWrapper {
             }
             return weakUntil;
         }
+
+        @Override
+        public void modify(int obj) {
+            // do nothing
+        }
     }
 }

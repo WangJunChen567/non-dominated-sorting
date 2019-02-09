@@ -169,7 +169,7 @@ public abstract class JFBBase extends NonDominatedSorting {
                     Deadline deadline = Deadline.fromNow(Duration.ofMinutes(5));
                     int result = hybrid.helperAHook(from, until, obj, maximalMeaningfulRank, deadline);
                     if (deadline.wasExceeded()) {
-                        // TODO modify
+                        hybrid.modify(obj);
                     } else {
                         return result;
                     }
@@ -310,7 +310,7 @@ public abstract class JFBBase extends NonDominatedSorting {
                         Deadline deadline = Deadline.fromNow(Duration.ofMinutes(5));
                         int result = hybrid.helperBHook(goodFrom, goodUntil, weakFrom, weakUntil, obj, tempFrom, maximalMeaningfulRank, deadline);
                         if (deadline.wasExceeded()) {
-                            // TODO modify
+                            hybrid.modify(obj);
                         } else {
                             return result;
                         }

@@ -3,6 +3,8 @@ package ru.ifmo.nds.jfb.hybrid;
 import ru.ifmo.nds.jfb.Deadline;
 import ru.ifmo.nds.jfb.HybridAlgorithmWrapper;
 import ru.ifmo.nds.jfb.JFBBase;
+import ru.ifmo.nds.jfb.hybrid.ps.ParameterStrategy;
+import ru.ifmo.nds.jfb.hybrid.ps.ParameterStrategyFactory;
 import ru.ifmo.nds.ndt.Split;
 import ru.ifmo.nds.ndt.SplitBuilder;
 import ru.ifmo.nds.ndt.TreeRankNode;
@@ -11,11 +13,16 @@ public final class NDT extends HybridAlgorithmWrapper {
     private final int threshold3D;
     private final int thresholdAll;
     private final int treeThreshold;
+    private final ParameterStrategyFactory threshold3DStrategyFactory;
+    private final ParameterStrategyFactory thresholdAllStrategyFactory;
 
-    public NDT(int threshold3D, int thresholdAll, int treeThreshold) {
+
+    public NDT(int threshold3D, int thresholdAll, int treeThreshold, ParameterStrategyFactory threshold3DStrategyFactory, ParameterStrategyFactory thresholdAllStrategyFactory) {
         this.threshold3D = threshold3D;
         this.thresholdAll = thresholdAll;
         this.treeThreshold = treeThreshold;
+        this.threshold3DStrategyFactory = threshold3DStrategyFactory;
+        this.thresholdAllStrategyFactory = thresholdAllStrategyFactory;
     }
 
     @Override
@@ -30,7 +37,7 @@ public final class NDT extends HybridAlgorithmWrapper {
 
     @Override
     public HybridAlgorithmWrapper.Instance create(int[] ranks, int[] indices, double[][] points, double[][] transposedPoints) {
-        return new Instance(ranks, indices, points, transposedPoints, threshold3D, thresholdAll, treeThreshold);
+        return new Instance(ranks, indices, points, transposedPoints, threshold3D, thresholdAll, treeThreshold, threshold3DStrategyFactory.createStrategy(), thresholdAllStrategyFactory.createStrategy());
     }
 
     private static final class Instance extends HybridAlgorithmWrapper.Instance {
@@ -44,11 +51,13 @@ public final class NDT extends HybridAlgorithmWrapper {
 
         private double[][] localPoints;
 
-        private final int threshold3D;
-        private final int thresholdAll;
+        private int threshold3D;
+        private int thresholdAll;
         private final int threshold;
+        private final ParameterStrategy threshold3DStrategy;
+        private final ParameterStrategy thresholdAllStrategy;
 
-        private Instance(int[] ranks, int[] indices, double[][] points, double[][] transposedPoints, int threshold3D, int thresholdAll, int treeThreshold) {
+        private Instance(int[] ranks, int[] indices, double[][] points, double[][] transposedPoints, int threshold3D, int thresholdAll, int treeThreshold, ParameterStrategy threshold3DStrategy, ParameterStrategy thresholdAllStrategy) {
             this.ranks = ranks;
             this.indices = indices;
             this.points = points;
@@ -57,6 +66,8 @@ public final class NDT extends HybridAlgorithmWrapper {
             this.threshold3D = threshold3D;
             this.thresholdAll = thresholdAll;
             this.threshold = treeThreshold;
+            this.threshold3DStrategy = threshold3DStrategy;
+            this.thresholdAllStrategy = thresholdAllStrategy;
 
             int maximumPoints = indices.length;
             int maximumDimension = transposedPoints.length;
@@ -141,6 +152,19 @@ public final class NDT extends HybridAlgorithmWrapper {
             }
             tree = null;
             return JFBBase.kickOutOverflowedRanks(indices, ranks, maximalMeaningfulRank, minOverflow, weakUntil);
+        }
+
+        @Override
+        public void modify(int obj) {
+            switch (obj) {
+                case 1:
+                    break;
+                case 2:
+                    threshold3D = threshold3DStrategy.next(threshold3D);
+                    break;
+                default:
+                    thresholdAll = thresholdAllStrategy.next(thresholdAll);
+            }
         }
     }
 }

@@ -10,5 +10,6 @@ public abstract class HybridAlgorithmWrapper {
         public abstract boolean helperBHookCondition(int goodFrom, int goodUntil, int weakFrom, int weakUntil, int obj);
         public abstract int helperAHook(int from, int until, int obj, int maximalMeaningfulRank, Deadline deadline);
         public abstract int helperBHook(int goodFrom, int goodUntil, int weakFrom, int weakUntil, int obj, int tempFrom, int maximalMeaningfulRank, Deadline deadline);
+        public abstract void modify(int obj);
     }
 }

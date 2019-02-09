@@ -46,5 +46,10 @@ public final class Dummy extends HybridAlgorithmWrapper {
         public int helperBHook(int goodFrom, int goodUntil, int weakFrom, int weakUntil, int obj, int tempFrom, int maximalMeaningfulRank, Deadline deadline) {
             throw new UnsupportedOperationException("helperBHook should never be called");
         }
+
+        @Override
+        public void modify(int obj) {
+            throw new UnsupportedOperationException("modify should never be called");
+        }
     };
 }
