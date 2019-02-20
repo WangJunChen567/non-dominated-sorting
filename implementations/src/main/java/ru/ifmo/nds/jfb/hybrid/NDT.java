@@ -112,7 +112,8 @@ public final class NDT extends HybridAlgorithmWrapper {
                 }
             }
             if (deadline.wasExceeded()) {
-                // TODO deadline exceeded
+                tree = null;
+                return -1;
             }
             tree = null;
             return JFBBase.kickOutOverflowedRanks(indices, ranks, maximalMeaningfulRank, minOverflow, until);
@@ -135,12 +136,9 @@ public final class NDT extends HybridAlgorithmWrapper {
             for (int good = goodFrom, weak = weakFrom; weak < weakUntil && !deadline.isExceeded(); ++weak) {
                 int wi = indices[weak];
                 int gi;
-                while (good < goodUntil && (gi = indices[good]) < wi && !deadline.isExceeded()) {
+                while (good < goodUntil && (gi = indices[good]) < wi) {
                     tree = tree.add(localPoints[good], ranks[gi], split, threshold);
                     ++good;
-                }
-                if (deadline.wasExceeded()) {
-                    // TODO deadline exceeded
                 }
                 ranks[wi] = tree.evaluateRank(localPoints[weak], ranks[wi], split, M);
                 if (minOverflow > weak && ranks[wi] > maximalMeaningfulRank) {
@@ -148,7 +146,8 @@ public final class NDT extends HybridAlgorithmWrapper {
                 }
             }
             if (deadline.wasExceeded()) {
-                // TODO deadline exceeded
+                tree = null;
+                return -1;
             }
             tree = null;
             return JFBBase.kickOutOverflowedRanks(indices, ranks, maximalMeaningfulRank, minOverflow, weakUntil);

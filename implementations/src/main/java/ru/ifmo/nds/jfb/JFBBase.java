@@ -1,7 +1,9 @@
 package ru.ifmo.nds.jfb;
 
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.ForkJoinTask;
 import java.util.concurrent.RecursiveAction;
@@ -31,6 +33,9 @@ public abstract class JFBBase extends NonDominatedSorting {
     private final int allowedThreads;
     private final String nameAddend;
 
+    private final List<SplitMergeMetricA> splitMergeMetricAList;
+    private final List<SplitMergeMetricB> splitMergeMetricBList;
+
     JFBBase(int maximumPoints,
             int maximumDimension,
             int allowedThreads,
@@ -58,6 +63,10 @@ public abstract class JFBBase extends NonDominatedSorting {
             splitMerge = new SplitMergeHelper(maximumPoints);
             hybrid = hybridWrapper.create(ranks, indices, points, transposedPoints);
         }
+
+        splitMergeMetricAList = new ArrayList<>();
+        splitMergeMetricBList = new ArrayList<>();
+
     }
 
     @Override
@@ -177,6 +186,7 @@ public abstract class JFBBase extends NonDominatedSorting {
                 if (ArrayHelper.transplantAndCheckIfSame(transposedPoints[obj], indices, from, until, temporary, from)) {
                     --obj;
                 } else {
+                    long startTime = System.nanoTime();
                     double median = ArrayHelper.destructiveMedian(temporary, from, until);
                     long split = splitMerge.splitInThree(transposedPoints[obj], indices, from, from, until, median);
                     int startMid = SplitMergeHelper.extractMid(split);
@@ -191,7 +201,10 @@ public abstract class JFBBase extends NonDominatedSorting {
                     ++obj;
                     newUntil = helperA(startRight, newUntil, obj);
 
-                    return splitMerge.mergeThree(indices, from, from, newStartMid, startMid, newStartRight, startRight, newUntil);
+                    int res = splitMerge.mergeThree(indices, from, from, newStartMid, startMid, newStartRight, startRight, newUntil);
+                    long endTime = System.nanoTime();
+                    splitMergeMetricAList.add(new SplitMergeMetricA(from, until, endTime - startTime));
+                    return res;
                 }
             }
             return sweepA(from, until);
@@ -324,6 +337,7 @@ public abstract class JFBBase extends NonDominatedSorting {
                         case ArrayHelper.TRANSPLANT_RIGHT_SMALLER:
                             return weakUntil;
                         case ArrayHelper.TRANSPLANT_GENERAL_CASE:
+                            long startTime = System.nanoTime();
                             double median = ArrayHelper.destructiveMedian(temporary, tempFrom, tempFrom + goodUntil - goodFrom + weakUntil - weakFrom);
                             long goodSplit = splitMerge.splitInThree(currentPoints, indices, tempFrom, goodFrom, goodUntil, median);
                             int goodMidL = SplitMergeHelper.extractMid(goodSplit);
@@ -351,8 +365,11 @@ public abstract class JFBBase extends NonDominatedSorting {
                                     : helperB(goodFrom, goodMidL, weakFrom, weakMidL, obj, tempFrom);
 
                             splitMerge.mergeThree(indices, tempFrom, goodFrom, goodMidL, goodMidL, goodMidR, goodMidR, goodUntil);
-                            return splitMerge.mergeThree(indices, tempFrom,
+                            int res = splitMerge.mergeThree(indices, tempFrom,
                                     weakFrom, newWeakMidL, weakMidL, newWeakMidR, weakMidR, newWeakUntil);
+                            long endTime = System.nanoTime();
+                            splitMergeMetricBList.add(new SplitMergeMetricB(goodFrom, goodUntil, weakFrom, weakUntil, endTime - startTime));
+                            return res;
                     }
 
                 }
@@ -434,4 +451,13 @@ public abstract class JFBBase extends NonDominatedSorting {
     private String getThreadDescription() {
         return allowedThreads == -1 ? "unlimited threads" : allowedThreads + " thread(s)";
     }
+
+    public List<SplitMergeMetricA> getSplitMergeMetricA () {
+        return splitMergeMetricAList;
+    }
+
+    public List<SplitMergeMetricB> getSplitMergeMetricB () {
+        return splitMergeMetricBList;
+    }
+
 }

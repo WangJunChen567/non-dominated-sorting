@@ -147,7 +147,7 @@ public final class ENS extends HybridAlgorithmWrapper {
                 }
             }
             if (deadline.wasExceeded()) {
-                // TODO deadline exceeded
+                return -1;
             }
             return JFBBase.kickOutOverflowedRanks(indices, ranks, maximalMeaningfulRank, minOverflow, until);
         }
@@ -273,7 +273,7 @@ public final class ENS extends HybridAlgorithmWrapper {
 
             int minRank = transplantRanksAndCheckWhetherAllAreSame(goodFrom, goodUntil, ranksAndSlicesOffset, sortedIndicesOffset, deadline);
             if (deadline.wasExceeded()) {
-                // TODO deadline exceeded
+                return -1;
             }
             if (minRank != 1) {
                 // "good" has a single front, let's do the simple stuff
@@ -286,7 +286,7 @@ public final class ENS extends HybridAlgorithmWrapper {
                 for (int weak = weakFrom, good = goodFrom, sliceOfGood = ranksAndSlicesOffset; weak < weakUntil && !deadline.isExceeded(); ++weak) {
                     int wi = indices[weak];
                     int gi;
-                    while (good < goodUntil && (gi = indices[good]) < wi && !deadline.isExceeded()) {
+                    while (good < goodUntil && (gi = indices[good]) < wi) {
                         int sliceTailIndex = space[sliceOfGood] + 1;
                         int spaceAtTail = space[sliceTailIndex];
                         space[spaceAtTail] = gi;
@@ -294,13 +294,13 @@ public final class ENS extends HybridAlgorithmWrapper {
                         ++good;
                         ++sliceOfGood;
                     }
-                    if (deadline.wasExceeded()) {
-                        // TODO deadline exceeded
-                    }
                     int weakRank = findRankInSlices(sliceOffset, sliceLast, wi, obj);
                     if (weakRank > maximalMeaningfulRank && minOverflowed > weak) {
                         minOverflowed = weak;
                     }
+                }
+                if (deadline.wasExceeded()) {
+                    return -1;
                 }
                 return JFBBase.kickOutOverflowedRanks(indices, ranks, maximalMeaningfulRank, minOverflowed, weakUntil);
             }

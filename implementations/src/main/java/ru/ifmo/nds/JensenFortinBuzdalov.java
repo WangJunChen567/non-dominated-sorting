@@ -14,35 +14,35 @@ import ru.ifmo.nds.util.VanEmdeBoasRankQueryStructureInt;
 public final class JensenFortinBuzdalov {
     private JensenFortinBuzdalov() {}
 
-    public static NonDominatedSortingFactory getRedBlackTreeSweepImplementation(int allowedThreads) {
+    public static NonDominatedSortingFactory<JFBDouble> getRedBlackTreeSweepImplementation(int allowedThreads) {
         return (p, d) -> new JFBDouble(new RedBlackRankQueryStructure(p), d, allowedThreads, Dummy.getWrapperInstance());
     }
 
-    public static NonDominatedSortingFactory getFenwickSweepImplementation(int allowedThreads) {
+    public static NonDominatedSortingFactory<JFBDouble> getFenwickSweepImplementation(int allowedThreads) {
         return (p, d) -> new JFBDouble(new FenwickRankQueryStructureDouble(p), d, allowedThreads, Dummy.getWrapperInstance());
     }
 
-    public static NonDominatedSortingFactory getVanEmdeBoasImplementation() {
+    public static NonDominatedSortingFactory<JFBInt> getVanEmdeBoasImplementation() {
         return (p, d) -> new JFBInt(new VanEmdeBoasRankQueryStructureInt(p), d, 1, Dummy.getWrapperInstance());
     }
 
-    public static NonDominatedSortingFactory getVanEmdeBoasHybridENSImplementation() {
+    public static NonDominatedSortingFactory<JFBInt> getVanEmdeBoasHybridENSImplementation() {
         return (p, d) -> new JFBInt(new VanEmdeBoasRankQueryStructureInt(p), d, 1, new ENS(100, 200, ParameterStrategyFactory.CONST, ParameterStrategyFactory.CONST));
     }
 
-    public static NonDominatedSortingFactory getVanEmdeBoasHybridNDTImplementation(int threshold) {
+    public static NonDominatedSortingFactory<JFBInt> getVanEmdeBoasHybridNDTImplementation(int threshold) {
         return (p, d) -> new JFBInt(new VanEmdeBoasRankQueryStructureInt(p), d, 1, new NDT(100, 20000, threshold, ParameterStrategyFactory.CONST, ParameterStrategyFactory.CONST));
     }
 
-    public static NonDominatedSortingFactory getRedBlackTreeSweepHybridFNDSImplementation(int allowedThreads) {
+    public static NonDominatedSortingFactory<JFBDouble> getRedBlackTreeSweepHybridFNDSImplementation(int allowedThreads) {
         return (p, d) -> new JFBDouble(new RedBlackRankQueryStructure(p), d, allowedThreads, LinearNDS.getWrapperInstance());
     }
 
-    public static NonDominatedSortingFactory getRedBlackTreeSweepHybridENSImplementation(int allowedThreads) {
+    public static NonDominatedSortingFactory<JFBDouble> getRedBlackTreeSweepHybridENSImplementation(int allowedThreads) {
         return (p, d) -> new JFBDouble(new RedBlackRankQueryStructure(p), d, allowedThreads, new ENS(100, 200, ParameterStrategyFactory.CONST, ParameterStrategyFactory.CONST));
     }
 
-    public static NonDominatedSortingFactory getRedBlackTreeSweepHybridNDTImplementation(int threshold) {
+    public static NonDominatedSortingFactory<JFBDouble> getRedBlackTreeSweepHybridNDTImplementation(int threshold) {
         return (p, d) -> new JFBDouble(new RedBlackRankQueryStructure(p), d, 1, new NDT(100, 20000, threshold, ParameterStrategyFactory.CONST, ParameterStrategyFactory.CONST));
     }
 }

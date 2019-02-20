@@ -34,8 +34,9 @@ public final class IdCollection {
         return allNDSFactories.keySet();
     }
 
-    public static NonDominatedSortingFactory getNonDominatedSortingFactory(String id) {
-        NonDominatedSortingFactory factory = allNDSFactories.get(id);
+    public static <A extends NonDominatedSorting> NonDominatedSortingFactory<A> getNonDominatedSortingFactory(String id) {
+        //noinspection unchecked
+        NonDominatedSortingFactory<A> factory = allNDSFactories.get(id);
         if (factory == null) {
             throw new IllegalArgumentException("Non-dominated sorting factory ID '" + id + "' is not known");
         }
